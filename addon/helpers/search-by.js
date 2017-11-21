@@ -1,57 +1,79 @@
 import { defineProperty } from '@ember/object';
-import { isArray as isEmberArray } from '@ember/array';
 import { filter } from '@ember/object/computed';
 import Helper from '@ember/component/helper';
 import { get } from '@ember/object';
 import { observer } from '@ember/object';
 import { set } from '@ember/object';
-import { isEmpty, isPresent } from '@ember/utils';
+import { isEmpty } from '@ember/utils';
 import isEqual from '../utils/is-equal';
 
 export default Helper.extend({
-  compute([byPath, value, array]) {
-    if (!isEmberArray(array) && isEmberArray(value)) {
-      array = value;
-      value = undefined;
-    }
-
+  compute([searchScopes, array, didFinishSearch, doNotRender]) {
     set(this, 'array', array);
-    set(this, 'byPath', byPath);
-    set(this, 'value', value);
-
+    set(this, 'didFinishSearch', didFinishSearch);
+    set(this, 'doNotRender', doNotRender);
+    set(this, 'searchScopes', searchScopes);
     return get(this, 'content');
   },
 
-  byPathDidChange: observer('byPath', 'value', function() {
-    let byPath = get(this, 'byPath');
-    let value = get(this, 'value');
-
-    if (isEmpty(byPath)) {
+  byPathDidChange: observer('searchScopes', function() {
+    let searchScopes = this.get('searchScopes');
+    if (isEmpty(searchScopes)) {
       defineProperty(this, 'content', []);
       return;
     }
-
-    let filterFn;
-
-    if (isPresent(value)) {
-      if (typeof value === 'function') {
-        filterFn = (item) => value(get(item, byPath));
-      } else {
-        if (typeof(value) != 'string') {
+    let searchScopesObjects = get(this, 'searchScopes').map((item) => {
+      let searchScope = item.split(':');
+      return { searchProp: searchScope[0], searchMethod: searchScope[1], searchValue: searchScope[2] };
+    });
+    let filterFunctions = [];
+    searchScopesObjects.forEach((element) => {
+      let filterFn;
+      let value = element.searchValue;
+      let method = element.searchMethod;
+      let byPath = element.searchProp;
+      switch (method) {
+        case 'isGreaterThan':
+          filterFn = ((item) => item[byPath] > value);
+          break;
+        case 'isLessThan':
+          filterFn = ((item) => item[byPath] < value);
+          break;
+        case 'equals':
           filterFn = (item) => isEqual(get(item, byPath), value);
-        } else {
-          filterFn = function(item) {
-            return item[byPath].search(new RegExp(value, 'i')) != -1;
-          };
-        }
+          break;
+        case 'doesNotEquals':
+          filterFn = ((item) => item[byPath] != value);
+          break;
+        case 'exists':
+          if (value) {
+            filterFn = (item) => !!get(item, byPath);
+          } else {
+            filterFn = (item) => !get(item, byPath);
+          }
+          break;
+        case 'contains':
+          filterFn = ((item) => item[byPath].search(new RegExp(value, 'i')) != -1);
+          break;
+        default:
+          filterFn = (item) => isEqual(get(item, byPath), value);
+          break;
       }
-    } else {
-      filterFn = (item) => !!get(item, byPath);
-    }
+      filterFunctions.push(filterFn);
+    });
 
-    let cp = filter(`array.@each.${byPath}`, filterFn);
-
+    let complexFilterFunction = function(item) {
+      let filterResults = filterFunctions.map((currentFilter) => currentFilter(item));
+      return filterResults.every((item) => item === true);
+    };
+    let cp = filter('array.@each', complexFilterFunction);
     defineProperty(this, 'content', cp);
+    this.get('didFinishSearch')(get(this, 'content'));
+    let doNotRender = this.get('doNotRender');
+    if (doNotRender) {
+      cp = filter('array.@each', (() => false));
+      defineProperty(this, 'content', cp);
+    }
   }),
 
   contentDidChange: observer('content', function() {
