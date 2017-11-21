@@ -27,6 +27,7 @@ export { default as RangeHelper } from './helpers/range';
 export { default as ReduceHelper } from './helpers/reduce';
 export { default as RejectByHelper } from './helpers/reject-by';
 export { default as RepeatHelper } from './helpers/repeat';
+export { default as SearchByHelper } from './helpers/search-by';
 export { default as ShuffleHelper } from './helpers/shuffle';
 export { default as SortByHelper } from './helpers/sort-by';
 export { default as TakeHelper } from './helpers/take';
