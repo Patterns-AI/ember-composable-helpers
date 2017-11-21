@@ -84,6 +84,7 @@ For help upgrading between major versions, check out the [upgrading documentatio
   + [`sort-by`](#sort-by)
   + [`filter`](#filter)
   + [`filter-by`](#filter-by)
+  + [`search-by`](#search-by)
   + [`reject-by`](#reject-by)
   + [`find-by`](#find-by)
   + [`intersect`](#intersect)
@@ -309,6 +310,40 @@ You can also pass an action as second argument:
 
 ```hbs
 {{#each (filter-by "age" (action "olderThan" 18) users) as |user|}}
+  {{user.name}} is older than eighteen!
+{{/each}}
+```
+
+**[⬆️ back to top](#available-helpers)**
+
+#### `search-by`
+Filters an array by a property that contains a value.
+
+```hbs
+{{#each (search-by "isActive" true users) as |user|}}
+  {{user.name}} is active!
+{{/each}}
+```
+
+
+```hbs
+{{#each (search-by "name" 'Th' users) as |user|}}
+  {{user.name}} contains Th
+{{/each}}
+```
+
+If you omit the second argument it will test if the property is truthy.
+
+```hbs
+{{#each (search-by "address" users) as |user|}}
+  {{user.name}} has an address specified!
+{{/each}}
+```
+
+You can also pass an action as second argument:
+
+```hbs
+{{#each (search-by "age" (action "olderThan" 18) users) as |user|}}
   {{user.name}} is older than eighteen!
 {{/each}}
 ```
