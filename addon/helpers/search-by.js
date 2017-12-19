@@ -8,7 +8,7 @@ import { isEmpty } from '@ember/utils';
 import isEqual from '../utils/is-equal';
 
 export default Helper.extend({
-  compute([searchScopes, array, didFinishSearch, doNotRender]) {
+  compute([searchScopes, array, doNotRender, didFinishSearch]) {
     set(this, 'array', array);
     set(this, 'didFinishSearch', didFinishSearch);
     set(this, 'doNotRender', doNotRender);
@@ -68,7 +68,10 @@ export default Helper.extend({
     };
     let cp = filter('array.@each', complexFilterFunction);
     defineProperty(this, 'content', cp);
-    this.get('didFinishSearch')(get(this, 'content'));
+    let didFinishSearch = this.get('didFinishSearch');
+    if (didFinishSearch) {
+      didFinishSearch(get(this, 'content'));
+    }
     let doNotRender = this.get('doNotRender');
     if (doNotRender) {
       cp = filter('array.@each', (() => false));
