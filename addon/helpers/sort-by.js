@@ -15,7 +15,6 @@ export default Helper.extend({
     if (typeOf(firstSortProp) === 'function' || isEmberArray(firstSortProp)) {
       sortProps = firstSortProp;
     }
-
     set(this, 'array', array);
     set(this, 'didFinishSort', didFinishSort);
     set(this, 'doNotRender', doNotRender);
@@ -28,13 +27,14 @@ export default Helper.extend({
     let sortProps = get(this, 'sortProps');
 
     if (isEmpty(sortProps)) {
-      defineProperty(this, 'content', []);
-    }
-
-    if (typeof sortProps === 'function') {
-      defineProperty(this, 'content', sort('array', sortProps));
+      let cp = filter('array.@each', (() => true));
+      defineProperty(this, 'content', cp);
     } else {
-      defineProperty(this, 'content', sort('array', 'sortProps'));
+      if (typeof sortProps === 'function') {
+        defineProperty(this, 'content', sort('array', sortProps));
+      } else {
+        defineProperty(this, 'content', sort('array', 'sortProps'));       
+      }
     }
     let didFinishSort = this.get('didFinishSort');
     if (didFinishSort) {
