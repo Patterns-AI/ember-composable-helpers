@@ -53,7 +53,7 @@ export default Helper.extend({
           }
           break;
         case 'contains':
-          filterFn = ((item) => item[byPath].search(new RegExp(value, 'i')) != -1);
+          filterFn = ((item) => item[byPath].toString().search(new RegExp(value.toString(), 'i')) != -1);
           break;
         default:
           filterFn = (item) => isEqual(get(item, byPath), value);

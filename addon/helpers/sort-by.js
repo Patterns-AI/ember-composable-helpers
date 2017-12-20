@@ -33,7 +33,7 @@ export default Helper.extend({
       if (typeof sortProps === 'function') {
         defineProperty(this, 'content', sort('array', sortProps));
       } else {
-        defineProperty(this, 'content', sort('array', 'sortProps'));       
+        defineProperty(this, 'content', sort('array', 'sortProps'));
       }
     }
     let didFinishSort = this.get('didFinishSort');
